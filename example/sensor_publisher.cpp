@@ -60,9 +60,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Set discovery server endpoint
-    participant->set_discovery_endpoint(
-        mdds::Endpoint("127.0.0.1", discovery_port, mdds::TransportType::UDP));
+    // Enable multicast discovery (decentralized)
+    participant->enable_multicast_discovery(true);
 
     // 2. Start participant
     if (!participant->start()) {

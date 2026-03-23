@@ -9,14 +9,24 @@
 
 namespace mdds {
 
-// ========== UDP Transport Implementation ==========
+static bool is_multicast_address(const std::string& addr) {
+    in_addr in;
+    if (inet_pton(AF_INET, addr.c_str(), &in) <= 0) return false;
+    uint32_t addr_n = ntohl(in.s_addr);
+    return (addr_n >= 0xE0000000 && addr_n <= 0xEFFFFFFF);
+}
+
+static bool is_multicast_address(uint32_t addr_n) {
+    return (addr_n >= 0xE0000000 && addr_n <= 0xEFFFFFFF);
+}
 
 class UdpTransport : public Transport {
 public:
     UdpTransport(DomainId domain_id)
         : domain_id_(domain_id)
         , sock_(-1)
-        , is_open_(false) {
+        , is_open_(false)
+        , enable_multicast_recv_(false) {
     }
 
     ~UdpTransport() override {
@@ -24,11 +34,19 @@ public:
     }
 
     bool init(const Endpoint& local_endpoint) override {
+
         // Create UDP socket
         sock_ = socket(AF_INET, SOCK_DGRAM, 0);
         if (sock_ < 0) {
             return false;
         }
+
+        int reuse = 1;
+        setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+
+        // Enable broadcast
+        int broadcast = 1;
+        setsockopt(sock_, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
 
         // Set non-blocking
         int flags = fcntl(sock_, F_GETFL, 0);
@@ -45,6 +63,18 @@ public:
             close();
             return false;
         }
+
+        // Join multicast group for receiving multicast data
+        struct ip_mreq mreq;
+        mreq.imr_multiaddr.s_addr = inet_addr("239.255.0.1");
+        mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+        if (setsockopt(sock_, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
+            // Not fatal - might not support multicast
+        }
+
+        // Enable multicast loopback so we can receive our own announcements
+        int loop = 1;
+        setsockopt(sock_, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
 
         local_endpoint_ = local_endpoint;
         local_endpoint_.port_ = ntohs(addr.sin_port);
@@ -65,6 +95,12 @@ public:
 
         if (inet_pton(AF_INET, destination.address_.c_str(), &dest_addr.sin_addr) <= 0) {
             return false;
+        }
+
+        // If sending to multicast, set TTL
+        if (is_multicast_address(destination.address_)) {
+            int ttl = 1;
+            setsockopt(sock_, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl));
         }
 
         ssize_t sent = sendto(sock_, data, size, 0,
@@ -133,6 +169,7 @@ private:
     DomainId domain_id_;
     int sock_;
     bool is_open_;
+    bool enable_multicast_recv_;
     Endpoint local_endpoint_;
     ReceiveCallback callback_;
 };

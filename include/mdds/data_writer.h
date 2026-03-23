@@ -105,11 +105,10 @@ bool DataWriter<T>::write(const T& data, uint64_t timestamp) {
         return false;
     }
 
-    // Send to all matched subscribers (via transport)
-    // Note: destination is broadcast for now
+    // Send to all matched subscribers via multicast
     Endpoint dest;
-    dest.address_ = "255.255.255.255";
-    dest.port_ = 0;  // Will be resolved by discovery
+    dest.address_ = "239.255.0.1";
+    dest.port_ = 7412;  // Data port
     dest.type_ = TransportType::UDP;
 
     return transport_->send(buffer.data(), buffer.size(), dest);

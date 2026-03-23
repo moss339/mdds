@@ -9,6 +9,7 @@ set(MDDS_SOURCES
     data_reader.cpp
     discovery.cpp
     discovery_server.cpp
+    multicast_discovery.cpp
     transport_udp.cpp
     transport_shm.cpp
 )

@@ -85,6 +85,14 @@ bool DomainParticipant::start() {
         return false;
     }
 
+    // Start multicast discovery if enabled
+    if (enable_multicast_discovery_) {
+        multicast_discovery_ = std::make_unique<MulticastDiscovery>(domain_id_, participant_id_);
+        if (!multicast_discovery_->start()) {
+            multicast_discovery_.reset();
+        }
+    }
+
     running_ = true;
     return true;
 }
@@ -95,6 +103,12 @@ void DomainParticipant::stop() {
     }
 
     running_ = false;
+
+    // Stop multicast discovery
+    if (multicast_discovery_) {
+        multicast_discovery_->stop();
+        multicast_discovery_.reset();
+    }
 
     // Stop discovery
     if (discovery_) {

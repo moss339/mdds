@@ -65,10 +65,7 @@ public:
         }
 
         // Get notification fd for polling
-        // Note: shm_handle_ is shm_handle_t* (struct shm_handle_impl**)
-        // But shm_get_notify_fd expects shm_handle_t (struct shm_handle_impl*)
-        // So we need to dereference
-        local_notify_fd_ = shm_get_notify_fd(*shm_handle_);
+        local_notify_fd_ = shm_get_notify_fd(shm_handle_);
 
         is_open_ = true;
         return true;
@@ -82,32 +79,31 @@ public:
         }
 
         // Get data pointer from shared memory
-        // Dereference shm_handle_ since functions expect shm_handle_t (single pointer)
-        void* shm_data = shm_get_data_ptr(*shm_handle_);
+        void* shm_data = shm_get_data_ptr(shm_handle_);
         if (!shm_data) {
             return false;
         }
 
         // Lock shared memory for writing
-        shm_error_t err = shm_lock(*shm_handle_, 1000);
+        shm_error_t err = shm_lock(shm_handle_, 1000);
         if (err != SHM_OK && err != SHM_ERR_LOCK_RECOVERED) {
             return false;
         }
 
         // Copy data to shared memory
-        size_t shm_data_size = shm_get_data_size(*shm_handle_);
+        size_t shm_data_size = shm_get_data_size(shm_handle_);
         if (size > shm_data_size) {
-            shm_unlock(*shm_handle_);
+            shm_unlock(shm_handle_);
             return false;
         }
 
         std::memcpy(shm_data, data, size);
 
         // Unlock
-        shm_unlock(*shm_handle_);
+        shm_unlock(shm_handle_);
 
         // Notify consumers
-        err = shm_notify(*shm_handle_);
+        err = shm_notify(shm_handle_);
         if (err != SHM_OK) {
             return false;
         }
@@ -137,24 +133,24 @@ public:
         }
 
         // Consume the notification
-        shm_consume_notify(*shm_handle_);
+        shm_consume_notify(shm_handle_);
 
         // Lock shared memory for reading
-        shm_error_t err = shm_lock(*shm_handle_, 1000);
+        shm_error_t err = shm_lock(shm_handle_, 1000);
         if (err != SHM_OK && err != SHM_ERR_LOCK_RECOVERED) {
             *received = 0;
             return false;
         }
 
         // Read data from shared memory
-        const void* shm_data = shm_get_data_ptr_const(*shm_handle_);
+        const void* shm_data = shm_get_data_ptr_const(shm_handle_);
         if (!shm_data) {
-            shm_unlock(*shm_handle_);
+            shm_unlock(shm_handle_);
             *received = 0;
             return false;
         }
 
-        size_t data_size = shm_get_data_size(*shm_handle_);
+        size_t data_size = shm_get_data_size(shm_handle_);
         if (data_size > max_size) {
             data_size = max_size;
         }
@@ -163,7 +159,7 @@ public:
         *received = data_size;
 
         // Unlock
-        shm_unlock(*shm_handle_);
+        shm_unlock(shm_handle_);
 
         return true;
     }
@@ -203,7 +199,7 @@ private:
     TopicId topic_id_;
     bool is_server_;
     bool is_open_;
-    shm_handle_t* shm_handle_;  // This is struct shm_handle_impl** (double pointer)
+    shm_handle_t shm_handle_;
     int local_notify_fd_;
     ReceiveCallback callback_;
 };

@@ -10,6 +10,7 @@
 #include "subscriber.h"
 #include "data_writer.h"
 #include "data_reader.h"
+#include "multicast_discovery.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -71,6 +72,13 @@ public:
     // Internal access for template classes
     std::shared_ptr<DomainParticipant> get_shared() { return shared_from_this(); }
 
+    // Multicast discovery control
+    void enable_multicast_discovery(bool enable) { enable_multicast_discovery_ = enable; }
+    bool is_multicast_discovery_enabled() const { return enable_multicast_discovery_; }
+
+    // Add topic to multicast discovery
+    void add_multicast_topic(const std::string& topic_name, bool is_publisher);
+
 public:
     // Note: Constructor is public to allow make_shared.
     // Use DomainParticipant::create() for construction.
@@ -86,9 +94,11 @@ public:
     ParticipantId participant_id_;
     std::unique_ptr<Discovery> discovery_;
     std::unique_ptr<Transport> control_transport_;
+    std::unique_ptr<MulticastDiscovery> multicast_discovery_;
     Endpoint discovery_endpoint_;
     std::atomic<bool> running_{false};
     bool is_server_{false};
+    bool enable_multicast_discovery_{false};
 
     // Topic management
     std::mutex topics_mutex_;
@@ -123,10 +133,13 @@ std::shared_ptr<Publisher<T>> DomainParticipant::create_publisher(
     auto topic = std::make_shared<Topic<T>>(topic_name, topic_id);
     topic->set_qos(qos);
 
-    // Create transport
+    // Create transport - bind to multicast data port
     auto transport = TransportFactory::create_transport(domain_id_, topic_id, TransportType::UDP);
-    Endpoint local_ep("0.0.0.0", 0, TransportType::UDP);
+    Endpoint local_ep("0.0.0.0", 7412, TransportType::UDP);
     transport->init(local_ep);
+
+    // Get local endpoint before moving transport
+    Endpoint transport_endpoint = transport->get_local_endpoint();
 
     // Create data writer
     auto writer = std::make_shared<DataWriter<T>>(topic, std::shared_ptr<Transport>(std::move(transport)), qos);
@@ -134,9 +147,16 @@ std::shared_ptr<Publisher<T>> DomainParticipant::create_publisher(
     // Create publisher
     auto publisher = std::make_shared<Publisher<T>>(shared_from_this(), topic, writer);
 
-    // Register with discovery
-    discovery_->register_publisher(topic_name, typeid(T).name(), topic_id,
-                                  transport->get_local_endpoint(), qos);
+    // Register with discovery (skip if using multicast discovery)
+    if (!enable_multicast_discovery_) {
+        discovery_->register_publisher(topic_name, typeid(T).name(), topic_id,
+                                      transport_endpoint, qos);
+    }
+
+    // Add to multicast discovery if enabled
+    if (enable_multicast_discovery_ && multicast_discovery_) {
+        multicast_discovery_->add_local_publisher(topic_name);
+    }
 
     return publisher;
 }
@@ -156,10 +176,13 @@ std::shared_ptr<Subscriber<T>> DomainParticipant::create_subscriber(
     auto topic = std::make_shared<Topic<T>>(topic_name, topic_id);
     topic->set_qos(qos);
 
-    // Create transport
+    // Create transport - bind to multicast data port for receiving
     auto transport = TransportFactory::create_transport(domain_id_, topic_id, TransportType::UDP);
-    Endpoint local_ep("0.0.0.0", 0, TransportType::UDP);
+    Endpoint local_ep("0.0.0.0", 7412, TransportType::UDP);
     transport->init(local_ep);
+
+    // Get local endpoint before moving transport
+    Endpoint transport_endpoint = transport->get_local_endpoint();
 
     // Create data reader
     auto reader = std::make_shared<DataReader<T>>(topic, std::shared_ptr<Transport>(std::move(transport)), qos);
@@ -168,9 +191,16 @@ std::shared_ptr<Subscriber<T>> DomainParticipant::create_subscriber(
     // Create subscriber
     auto subscriber = std::make_shared<Subscriber<T>>(shared_from_this(), topic, reader);
 
-    // Register with discovery
-    discovery_->register_subscriber(topic_name, typeid(T).name(), topic_id,
-                                  transport->get_local_endpoint(), qos);
+    // Register with discovery (skip if using multicast discovery)
+    if (!enable_multicast_discovery_) {
+        discovery_->register_subscriber(topic_name, typeid(T).name(), topic_id,
+                                      transport_endpoint, qos);
+    }
+
+    // Add to multicast discovery if enabled
+    if (enable_multicast_discovery_ && multicast_discovery_) {
+        multicast_discovery_->add_local_subscriber(topic_name);
+    }
 
     return subscriber;
 }
