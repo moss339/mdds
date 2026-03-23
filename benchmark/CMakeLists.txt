@@ -1,0 +1,3 @@
+add_executable(discovery_benchmark discovery_benchmark.cpp)
+target_include_directories(discovery_benchmark PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(discovery_benchmark mdds pthread)

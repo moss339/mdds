@@ -26,6 +26,12 @@ if(MDDS_BUILD_EXAMPLES)
     add_subdirectory(example)
 endif()
 
+# Add benchmark (optional)
+option(MDDS_BUILD_BENCHMARK "Build MDDS benchmark" ON)
+if(MDDS_BUILD_BENCHMARK)
+    add_subdirectory(benchmark)
+endif()
+
 # Add tests (optional)
 option(MDDS_BUILD_TESTS "Build MDDS tests" OFF)
 if(MDDS_BUILD_TESTS)
