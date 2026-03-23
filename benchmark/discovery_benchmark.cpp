@@ -7,6 +7,8 @@
 #include <random>
 #include <iomanip>
 #include <cstdlib>
+#include <unistd.h>
+#include <sys/wait.h>
 
 struct BenchmarkData {
     uint32_t id;
@@ -31,38 +33,53 @@ std::atomic<int> received_count{0};
 std::chrono::steady_clock::time_point start_time;
 
 void data_callback(const BenchmarkData& data, uint64_t timestamp) {
-    int current = received_count.fetch_add(1);
-    if (current < 5) {
-        std::cout << "  Received: id=" << data.id << ", value=" << data.value
-                  << " at " << (std::chrono::steady_clock::now() - start_time).count() / 1000000.0 << "ms" << std::endl;
-    }
+    received_count.fetch_add(1);
 }
 
-void run_subscriber(int id) {
+void run_subscriber_instance(int id, int duration_sec) {
     auto participant = mdds::DomainParticipant::create(0);
     participant->enable_multicast_discovery(true);
-    participant->start();
+    if (!participant->start()) {
+        std::cerr << "Failed to start participant" << std::endl;
+        return;
+    }
 
     auto subscriber = participant->create_subscriber<BenchmarkData>("BenchmarkTopic", data_callback);
+    if (!subscriber) {
+        std::cerr << "Failed to create subscriber" << std::endl;
+        return;
+    }
 
-    // Wait a bit to receive some data
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::cout << "Subscriber " << id << " started, listening for " << duration_sec << " seconds..." << std::endl;
+
+    // Run for specified duration
+    std::this_thread::sleep_for(std::chrono::seconds(duration_sec));
 
     participant->stop();
+    std::cout << "Subscriber " << id << " finished. Received " << received_count.load() << " messages" << std::endl;
 }
 
-void run_publisher(int id) {
+void run_publisher_instance(int id, int num_messages) {
     auto participant = mdds::DomainParticipant::create(0);
     participant->enable_multicast_discovery(true);
-    participant->start();
+    if (!participant->start()) {
+        std::cerr << "Failed to start participant" << std::endl;
+        return;
+    }
 
     auto publisher = participant->create_publisher<BenchmarkData>("BenchmarkTopic");
+    if (!publisher) {
+        std::cerr << "Failed to create publisher" << std::endl;
+        return;
+    }
 
     // Wait for discovery
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+    std::cout << "Publisher " << id << " started, sending " << num_messages << " messages..." << std::endl;
+
     // Send data
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < num_messages; ++i) {
         BenchmarkData data;
         data.id = id;
         data.value = (float)i;
@@ -71,68 +88,55 @@ void run_publisher(int id) {
     }
 
     participant->stop();
+    std::cout << "Publisher " << id << " finished" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
-    int num_instances = 50;
-    bool is_publisher = true;
+    int num_instances = 2;
+    int num_messages = 10;
+    int duration_sec = 5;
+    bool is_subscriber = false;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "-n" && i + 1 < argc) {
             num_instances = std::stoi(argv[++i]);
+        } else if (arg == "-m" && i + 1 < argc) {
+            num_messages = std::stoi(argv[++i]);
+        } else if (arg == "-d" && i + 1 < argc) {
+            duration_sec = std::stoi(argv[++i]);
         } else if (arg == "-s") {
-            is_publisher = false;
-        } else if (arg == "-p") {
-            is_publisher = true;
+            is_subscriber = true;
         }
     }
 
-    std::cout << "=== MDDS Discovery Benchmark ===" << std::endl;
-    std::cout << "Mode: " << (is_publisher ? "Publisher" : "Subscriber") << std::endl;
-    std::cout << "Instances: " << num_instances << std::endl;
-    std::cout << std::endl;
-
     start_time = std::chrono::steady_clock::now();
-    std::vector<std::thread> threads;
 
-    if (is_publisher) {
-        std::cout << "Starting " << num_instances << " publishers..." << std::endl;
+    if (is_subscriber) {
+        std::cout << "=== Running " << num_instances << " subscribers for " << duration_sec << " seconds ===" << std::endl;
+        std::vector<std::thread> threads;
         for (int i = 0; i < num_instances; ++i) {
-            threads.emplace_back(run_publisher, i);
-            if ((i + 1) % 10 == 0) {
-                std::cout << "  Started " << (i + 1) << " publishers" << std::endl;
-            }
+            threads.emplace_back(run_subscriber_instance, i, duration_sec);
         }
-
-        auto start = std::chrono::steady_clock::now();
         for (auto& t : threads) {
             t.join();
         }
-        auto elapsed = std::chrono::steady_clock::now() - start;
-
-        std::cout << std::endl;
-        std::cout << "All publishers finished in " << std::fixed << std::setprecision(2)
-                  << elapsed.count() / 1000000.0 << " ms" << std::endl;
+        std::cout << "All subscribers finished. Total received: " << received_count.load() << std::endl;
     } else {
-        std::cout << "Starting " << num_instances << " subscribers..." << std::endl;
+        std::cout << "=== Running " << num_instances << " publishers ===" << std::endl;
+        std::vector<std::thread> threads;
         for (int i = 0; i < num_instances; ++i) {
-            threads.emplace_back(run_subscriber, i);
-            if ((i + 1) % 10 == 0) {
-                std::cout << "  Started " << (i + 1) << " subscribers" << std::endl;
-            }
+            threads.emplace_back(run_publisher_instance, i, num_messages);
         }
-
-        // Wait for subscribers
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-
-        auto elapsed = std::chrono::steady_clock::now() - start_time;
-        std::cout << std::endl;
-        std::cout << "Total messages received: " << received_count.load() << std::endl;
-        std::cout << "Elapsed time: " << std::fixed << std::setprecision(2)
-                  << elapsed.count() / 1000000.0 << " ms" << std::endl;
+        for (auto& t : threads) {
+            t.join();
+        }
+        std::cout << "All publishers finished" << std::endl;
     }
 
-    std::cout << std::endl << "Benchmark complete." << std::endl;
+    auto total_time = std::chrono::steady_clock::now() - start_time;
+    std::cout << "Total time: " << std::fixed << std::setprecision(2)
+              << total_time.count() / 1000000.0 << " ms" << std::endl;
+
     return 0;
 }
