@@ -7,6 +7,8 @@ set(MDDS_SOURCES
     subscriber.cpp
     data_writer.cpp
     data_reader.cpp
+    data_writer_raw.cpp
+    data_reader_raw.cpp
     discovery.cpp
     discovery_server.cpp
     multicast_discovery.cpp

@@ -10,6 +10,8 @@
 #include "subscriber.h"
 #include "data_writer.h"
 #include "data_reader.h"
+#include "data_writer_raw.h"
+#include "data_reader_raw.h"
 #include "multicast_discovery.h"
 #include <memory>
 #include <string>
@@ -46,6 +48,14 @@ public:
     template<typename T>
     std::shared_ptr<Subscriber<T>> create_subscriber(const std::string& topic_name,
                                                       typename Subscriber<T>::DataCallback callback,
+                                                      const QoSConfig& qos = default_qos::subscriber());
+
+    // Create a Raw Publisher (for protobuf serialization)
+    std::shared_ptr<DataWriterRaw> create_writer_raw(const std::string& topic_name,
+                                                      const QoSConfig& qos = default_qos::publisher());
+
+    // Create a Raw Subscriber (for protobuf serialization)
+    std::shared_ptr<DataReaderRaw> create_reader_raw(const std::string& topic_name,
                                                       const QoSConfig& qos = default_qos::subscriber());
 
     // Get Domain ID
@@ -203,6 +213,46 @@ std::shared_ptr<Subscriber<T>> DomainParticipant::create_subscriber(
     }
 
     return subscriber;
+}
+
+// ========== Raw Writer/Reader Factory Methods ==========
+
+inline std::shared_ptr<DataWriterRaw> DomainParticipant::create_writer_raw(
+    const std::string& topic_name, const QoSConfig& qos) {
+
+    // Register topic with empty type name (raw doesn't need type info)
+    TopicId topic_id = register_topic(topic_name, "raw");
+
+    // Create non-templated topic
+    auto topic = std::make_shared<TopicBase>(topic_name, topic_id);
+    topic->set_qos(qos);
+
+    // Create transport
+    auto transport = TransportFactory::create_transport(domain_id_, topic_id, TransportType::UDP);
+    Endpoint local_ep("0.0.0.0", 7412, TransportType::UDP);
+    transport->init(local_ep);
+
+    // Create raw data writer
+    return std::make_shared<DataWriterRaw>(topic, std::move(transport), qos);
+}
+
+inline std::shared_ptr<DataReaderRaw> DomainParticipant::create_reader_raw(
+    const std::string& topic_name, const QoSConfig& qos) {
+
+    // Register topic with empty type name (raw doesn't need type info)
+    TopicId topic_id = register_topic(topic_name, "raw");
+
+    // Create non-templated topic
+    auto topic = std::make_shared<TopicBase>(topic_name, topic_id);
+    topic->set_qos(qos);
+
+    // Create transport
+    auto transport = TransportFactory::create_transport(domain_id_, topic_id, TransportType::UDP);
+    Endpoint local_ep("0.0.0.0", 7412, TransportType::UDP);
+    transport->init(local_ep);
+
+    // Create raw data reader
+    return std::make_shared<DataReaderRaw>(topic, std::move(transport), qos);
 }
 
 }  // namespace mdds

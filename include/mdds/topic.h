@@ -11,6 +11,26 @@
 
 namespace mdds {
 
+// ========== TopicBase (non-templated, for raw writers/readers) ==========
+
+class TopicBase {
+public:
+    TopicBase(const std::string& name, TopicId topic_id)
+        : name_(name)
+        , topic_id_(topic_id)
+        , qos_(default_qos::publisher()) {}
+
+    const std::string& get_name() const { return name_; }
+    TopicId get_topic_id() const { return topic_id_; }
+    const QoSConfig& get_qos() const { return qos_; }
+    void set_qos(const QoSConfig& qos) { qos_ = qos; }
+
+private:
+    std::string name_;
+    TopicId topic_id_;
+    QoSConfig qos_;
+};
+
 // ========== Topic Template ==========
 
 template<typename T>
