@@ -22,14 +22,13 @@
 #include <atomic>
 #include <random>
 
+namespace moss {
 namespace mdds {
 
 // ========== Domain Participant ==========
 
 class DomainParticipant : public std::enable_shared_from_this<DomainParticipant> {
 public:
-    using ParticipantId = uint32_t;
-
     // Create a domain participant instance
     static std::shared_ptr<DomainParticipant> create(DomainId domain_id);
 
@@ -257,4 +256,5 @@ inline std::shared_ptr<DataReaderRaw> DomainParticipant::create_reader_raw(
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_DOMAIN_PARTICIPANT_H

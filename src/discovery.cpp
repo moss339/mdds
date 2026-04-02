@@ -4,6 +4,7 @@
 #include <cstring>
 #include <arpa/inet.h>
 
+namespace moss {
 namespace mdds {
 
 Discovery::Discovery(DomainId domain_id, ParticipantId participant_id,
@@ -357,3 +358,5 @@ void Discovery::receive_loop() {
 }
 
 }  // namespace mdds
+
+}  // namespace moss

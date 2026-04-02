@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <functional>
 
+namespace moss {
 namespace mdds {
 
 constexpr const char* DEFAULT_MULTICAST_IP = "239.255.0.1";
@@ -119,4 +120,5 @@ private:
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_MULTICAST_DISCOVERY_H

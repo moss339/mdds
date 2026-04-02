@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/discovery_benchmark.dir/discovery_benchmark.cpp.o -o discovery_benchmark  ../lib/libmdds.a -lpthread /mnt/data/workspace/moss/mshm/build/src/libmshm.a 

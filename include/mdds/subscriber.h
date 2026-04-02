@@ -8,6 +8,7 @@
 #include <string>
 #include <functional>
 
+namespace moss {
 namespace mdds {
 
 // Forward declarations
@@ -99,4 +100,5 @@ TopicId Subscriber<T>::get_topic_id() const {
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_SUBSCRIBER_H

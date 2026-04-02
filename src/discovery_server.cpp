@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
+namespace moss {
 namespace mdds {
 
 DiscoveryServer::DiscoveryServer(uint16_t port)
@@ -353,3 +354,5 @@ void DiscoveryServer::receive_loop() {
 }
 
 }  // namespace mdds
+
+}  // namespace moss

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+namespace moss {
 namespace mdds {
 
 // Forward declarations
@@ -83,4 +84,5 @@ TopicId Publisher<T>::get_topic_id() const {
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_PUBLISHER_H

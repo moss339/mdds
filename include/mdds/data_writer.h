@@ -11,10 +11,16 @@
 #include <cstring>
 #include <atomic>
 
+namespace moss {
 namespace mdds {
 
 // ========== DataWriter Template ==========
 
+/**
+ * @deprecated 使用 DataWriterRaw 代替
+ * DataWriter<T> 依赖 T::serialize() 方法，已废弃。
+ * 请使用 DataWriterRaw + 上层 protobuf 序列化。
+ */
 template<typename T>
 class DataWriter {
 public:
@@ -122,4 +128,5 @@ bool DataWriter<T>::write(const T& data) {
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_DATA_WRITER_H

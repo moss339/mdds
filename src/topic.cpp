@@ -1,5 +1,6 @@
 #include "topic.h"
 
+namespace moss {
 namespace mdds {
 
 // ========== TopicManager Implementation ==========
@@ -75,3 +76,5 @@ std::vector<std::string> TopicManager::get_all_topics() const {
 }
 
 }  // namespace mdds
+
+}  // namespace moss

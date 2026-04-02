@@ -12,6 +12,7 @@
 #include <mutex>
 #include <vector>
 
+namespace moss {
 namespace mdds {
 
 /**
@@ -60,5 +61,6 @@ private:
     std::thread receive_thread_;
 };
 
-} // namespace mdds
+}  // namespace mdds
+}  // namespace moss
 #endif // MDDS_DATA_READER_RAW_H

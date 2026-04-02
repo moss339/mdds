@@ -16,6 +16,7 @@
 #include "data_writer.h"
 #include "data_reader.h"
 
+namespace moss {
 namespace mdds {
 
 // ========== Version Info ==========
@@ -26,4 +27,5 @@ constexpr uint32_t get_version_patch() { return 0; }
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_H

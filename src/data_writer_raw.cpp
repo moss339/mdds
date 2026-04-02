@@ -2,6 +2,7 @@
 #include "topic.h"
 #include <chrono>
 
+namespace moss {
 namespace mdds {
 
 DataWriterRaw::DataWriterRaw(std::shared_ptr<TopicBase> topic,
@@ -62,3 +63,4 @@ SequenceNumber DataWriterRaw::get_sequence_number() const {
 }
 
 }  // namespace mdds
+}  // namespace moss

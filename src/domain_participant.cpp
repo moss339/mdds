@@ -2,6 +2,7 @@
 #include "transport.h"
 #include <iostream>
 
+namespace moss {
 namespace mdds {
 
 // ========== Static Instance ==========
@@ -134,3 +135,5 @@ uint32_t DomainParticipant::generate_participant_id() {
 }
 
 }  // namespace mdds
+
+}  // namespace moss

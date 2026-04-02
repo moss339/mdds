@@ -1,0 +1,8 @@
+/mnt/data/workspace/moss/mdds/build_example/CMakeFiles/edit_cache.dir
+/mnt/data/workspace/moss/mdds/build_example/CMakeFiles/rebuild_cache.dir
+/mnt/data/workspace/moss/mdds/build_example/src/CMakeFiles/mdds.dir
+/mnt/data/workspace/moss/mdds/build_example/src/CMakeFiles/edit_cache.dir
+/mnt/data/workspace/moss/mdds/build_example/src/CMakeFiles/rebuild_cache.dir
+/mnt/data/workspace/moss/mdds/build_example/benchmark/CMakeFiles/discovery_benchmark.dir
+/mnt/data/workspace/moss/mdds/build_example/benchmark/CMakeFiles/edit_cache.dir
+/mnt/data/workspace/moss/mdds/build_example/benchmark/CMakeFiles/rebuild_cache.dir

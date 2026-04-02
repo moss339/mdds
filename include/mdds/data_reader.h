@@ -12,10 +12,16 @@
 #include <thread>
 #include <atomic>
 
+namespace moss {
 namespace mdds {
 
 // ========== DataReader Template ==========
 
+/**
+ * @deprecated 使用 DataReaderRaw 代替
+ * DataReader<T> 依赖 T::deserialize() 方法，已废弃。
+ * 请使用 DataReaderRaw + 上层 protobuf 反序列化。
+ */
 template<typename T>
 class DataReader {
 public:
@@ -200,4 +206,5 @@ void DataReader<T>::handle_incoming_data(const void* data, size_t size, const En
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_DATA_READER_H

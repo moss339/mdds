@@ -2,6 +2,7 @@
 #include "topic.h"
 #include <cstring>
 
+namespace moss {
 namespace mdds {
 
 DataReaderRaw::DataReaderRaw(std::shared_ptr<TopicBase> topic,
@@ -121,3 +122,4 @@ void DataReaderRaw::handle_incoming_data(const void* data, size_t size, const En
 }
 
 }  // namespace mdds
+}  // namespace moss

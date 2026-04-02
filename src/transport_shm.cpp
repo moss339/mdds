@@ -12,6 +12,7 @@ extern "C" {
 #include "shm/shm_types.h"
 }
 
+namespace moss {
 namespace mdds {
 
 // ========== SHM Transport Implementation ==========
@@ -211,3 +212,5 @@ std::unique_ptr<Transport> TransportFactory::create_shm_transport(DomainId domai
 }
 
 }  // namespace mdds
+
+}  // namespace moss

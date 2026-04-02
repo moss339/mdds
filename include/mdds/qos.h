@@ -4,6 +4,7 @@
 #include "types.h"
 #include <cstdint>
 
+namespace moss {
 namespace mdds {
 
 // ========== QoS Flags ==========
@@ -64,4 +65,5 @@ namespace default_qos {
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_QOS_H

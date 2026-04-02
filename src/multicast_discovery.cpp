@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+namespace moss {
 namespace mdds {
 
 MulticastDiscovery::MulticastDiscovery(DomainId domain_id, ParticipantId participant_id)
@@ -353,3 +354,5 @@ std::vector<PeerEntry> MulticastDiscovery::get_subscribers(const std::string& to
 }
 
 }  // namespace mdds
+
+}  // namespace moss

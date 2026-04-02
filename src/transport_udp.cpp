@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
+namespace moss {
 namespace mdds {
 
 static bool is_multicast_address(const std::string& addr) {
@@ -194,3 +195,5 @@ std::unique_ptr<Transport> TransportFactory::create_transport(DomainId domain_id
 }
 
 }  // namespace mdds
+
+}  // namespace moss

@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+namespace moss {
 namespace mdds {
 
 // MDDS Error Codes
@@ -66,4 +67,5 @@ inline const char* error_to_string(MddsError err) {
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_ERROR_H

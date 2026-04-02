@@ -6,6 +6,7 @@
 #include <memory>
 #include <functional>
 
+namespace moss {
 namespace mdds {
 
 // ========== Transport Interface ==========
@@ -49,4 +50,5 @@ public:
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_TRANSPORT_H

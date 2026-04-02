@@ -10,6 +10,7 @@
 #include <atomic>
 #include <cstring>
 
+namespace moss {
 namespace mdds {
 
 /**
@@ -44,5 +45,6 @@ private:
     std::mutex write_mutex_;
 };
 
-} // namespace mdds
+}  // namespace mdds
+}  // namespace moss
 #endif // MDDS_DATA_WRITER_RAW_H

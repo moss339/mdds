@@ -9,6 +9,7 @@
 #include <mutex>
 #include <vector>
 
+namespace moss {
 namespace mdds {
 
 // ========== TopicBase (non-templated, for raw writers/readers) ==========
@@ -84,4 +85,5 @@ private:
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_TOPIC_H

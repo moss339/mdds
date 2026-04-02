@@ -1,4 +1,6 @@
-# MDDS Library Source CMakeLists.txt
+cmake_minimum_required(VERSION 3.14)
+
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 set(MDDS_SOURCES
     topic.cpp
@@ -16,30 +18,34 @@ set(MDDS_SOURCES
     transport_shm.cpp
 )
 
-# Create library
-add_library(mdds ${MDDS_SOURCES})
+if(BUILD_SHARED_LIBS)
+    add_library(mdds SHARED ${MDDS_SOURCES})
+    set_target_properties(mdds PROPERTIES
+        VERSION 1.0.0
+        SOVERSION 1
+        POSITION_INDEPENDENT_CODE ON
+    )
+else()
+    add_library(mdds STATIC ${MDDS_SOURCES})
+    set_target_properties(mdds PROPERTIES
+        VERSION 1.0.0
+        SOVERSION 1
+    )
+endif()
 
-# Include directories
 target_include_directories(mdds PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include/mdds
-    ${SHM_INCLUDE_DIR}
+    ${mshm_ROOT}/include
 )
 
-# Link libraries
-target_link_libraries(mdds
-    PUBLIC
-    mshm
-    pthread
+target_link_libraries(mdds PUBLIC
+    mshm::mshm
+    Threads::Threads
 )
 
-# Set C++ standard
 target_compile_features(mdds PUBLIC cxx_std_17)
 
-# Enable symbol visibility
-target_compile_options(mdds PRIVATE -fPIC)
-
-# Set output directory
-set_target_properties(mdds PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+install(TARGETS mdds
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
 )

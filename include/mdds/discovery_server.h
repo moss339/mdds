@@ -12,6 +12,7 @@
 #include <condition_variable>
 #include <atomic>
 
+namespace moss {
 namespace mdds {
 
 // ========== Discovery Server ==========
@@ -69,4 +70,5 @@ private:
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_DISCOVERY_SERVER_H

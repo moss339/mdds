@@ -6,6 +6,7 @@
 #include <vector>
 #include <functional>
 
+namespace moss {
 namespace mdds {
 
 // ========== Type Definitions ==========
@@ -84,7 +85,7 @@ struct Endpoint {
     }
 };
 
-// ========== Endpoint Info ==========
+// ========== EndpointInfo ==========
 
 struct EndpointInfo {
     ParticipantId participant_id;
@@ -137,5 +138,6 @@ struct MatchResponseMsg {
 using ReceiveCallback = std::function<void(const void* data, size_t size, const Endpoint& sender)>;
 
 }  // namespace mdds
+}  // namespace moss
 
 #endif  // MDDS_TYPES_H

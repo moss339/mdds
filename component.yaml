@@ -1,0 +1,14 @@
+name: mdds
+description: MOSS Decentralized Discovery Service
+
+source:
+  root: .
+
+dependencies:
+  local:
+    - mshm
+
+build:
+  type: library
+  cmake_options:
+    CMAKE_BUILD_TYPE: Release

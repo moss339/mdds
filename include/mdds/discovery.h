@@ -13,6 +13,7 @@
 #include <atomic>
 #include <condition_variable>
 
+namespace moss {
 namespace mdds {
 
 // ========== Discovery Client ==========
@@ -97,4 +98,5 @@ struct TopicEntry {
 
 }  // namespace mdds
 
+}  // namespace moss
 #endif  // MDDS_DISCOVERY_H
